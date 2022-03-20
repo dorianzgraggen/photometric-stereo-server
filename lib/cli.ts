@@ -6,11 +6,13 @@ let expectedDevices: number;
 
 export function ask(msg: string, verification: (respone: string) => boolean) {
   let response;
+  
   do {
     response = prompt(msg);
     console.log(response);
     console.log(verification(response as string))
-  } while (response == null || !verification(response));
+  } while (response == null || !verification(response) );
+
 
   console.log("returning", response)
   return response;
