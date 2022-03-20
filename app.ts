@@ -10,6 +10,7 @@ import { readKeypress } from 'https://deno.land/x/keypress@0.0.7/mod.ts';
 let expectedDevices = 0;
 
 const devices = [];
+const clients: (WebSocketClient | null)[] = Array(10).map(() => null);
 
 expectedDevices = Number(
   cli.ask('Expected number of devices:', cli.validations.isNumber)
@@ -17,10 +18,12 @@ expectedDevices = Number(
 
 console.log(expectedDevices);
 
-const wss = new WebSocketServer(8080);
-wss.on('connection', function (ws: WebSocketClient) {
+const server = new WebSocketServer(8080);
+server.on('connection', function (client: WebSocketClient) {
   console.log('connected');
-  ws.on('message', function (message: string) {
+  clients.push(client);
+
+  client.on('message', function (message: string) {
     console.log(message);
 
     const [messageType, messageContent] = message.split(',');
@@ -42,17 +45,19 @@ wss.on('connection', function (ws: WebSocketClient) {
         break;
     }
 
-    ws.send('lol ' + message);
+    client.send('lol ' + message);
   });
 });
 
 const commands: any = {
   start: () => {
-    console.log('hehehehe');
+    clients.forEach((client) => {
+      client?.send('start');
 
-    setTimeout(() => {
-      console.log('shine bright like a diamond');
-    }, 1000);
+      setTimeout(() => {
+        client?.send('stop');
+      }, 2000);
+    });
   },
 };
 
